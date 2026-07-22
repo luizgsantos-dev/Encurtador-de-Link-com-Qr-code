@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detalhes do Link - Encurtador de Links</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1>Encurtador de Links</h1>
+    <button class="btn-secondary" id="logout-btn">Sair</button>
+  </div>
+
+  <div class="container">
+    <a href="/dashboard.html" class="back-link">&larr; Voltar para meus links</a>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h2 id="link-title">Carregando...</h2>
+      <a class="short-link" id="link-short-url" href="#" target="_blank" rel="noopener"></a>
+      <p style="color:var(--text-muted);font-size:14px;" id="link-destination"></p>
+    </div>
+
+    <div class="stat-cards">
+      <div class="card stat-card">
+        <div class="value" id="stat-total">0</div>
+        <div class="label">Total de cliques</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Cliques nos últimos 30 dias</h3>
+        <canvas id="clicks-chart" width="640" height="260"></canvas>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:20px;">
+          <h3>Dispositivos</h3>
+          <table id="device-table">
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Principais origens (referrer)</h3>
+          <table id="referrer-table">
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/link-detail.js"></script>
+</body>
+</html>

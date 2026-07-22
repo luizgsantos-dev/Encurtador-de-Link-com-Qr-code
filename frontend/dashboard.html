@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meus Links - Encurtador de Links</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1>Encurtador de Links</h1>
+    <button class="btn-secondary" id="logout-btn">Sair</button>
+  </div>
+
+  <div class="container">
+    <div class="section-header">
+      <h2>Meus links</h2>
+      <button class="btn-primary" id="new-link-btn">+ Novo link</button>
+    </div>
+
+    <div class="card">
+      <table id="links-table">
+        <thead>
+          <tr>
+            <th>Título / Link curto</th>
+            <th>Destino</th>
+            <th>Cliques</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="links-tbody"></tbody>
+      </table>
+      <div class="empty-state hidden" id="empty-state">Nenhum link criado ainda.</div>
+    </div>
+  </div>
+
+  <!-- Modal criar/editar link -->
+  <div class="modal-backdrop hidden" id="link-modal-backdrop">
+    <div class="modal">
+      <h2 id="link-modal-title">Novo link</h2>
+      <form id="link-form">
+        <input type="hidden" id="link-id" />
+
+        <label for="title">Título (opcional)</label>
+        <input type="text" id="title" placeholder="Ex: Campanha de verão" />
+
+        <div id="custom-code-wrapper">
+          <label for="custom-code">Código customizado (opcional)</label>
+          <input type="text" id="custom-code" placeholder="Ex: promo-verao" />
+        </div>
+
+        <label for="destination-url">URL de destino</label>
+        <input type="text" id="destination-url" required placeholder="https://exemplo.com/pagina" />
+
+        <div class="utm-box">
+          <h3>UTM Builder</h3>
+          <div class="utm-grid">
+            <div>
+              <label for="utm-source">utm_source</label>
+              <input type="text" id="utm-source" placeholder="google" />
+            </div>
+            <div>
+              <label for="utm-medium">utm_medium</label>
+              <input type="text" id="utm-medium" placeholder="cpc" />
+            </div>
+            <div>
+              <label for="utm-campaign">utm_campaign</label>
+              <input type="text" id="utm-campaign" placeholder="verao2026" />
+            </div>
+            <div>
+              <label for="utm-term">utm_term</label>
+              <input type="text" id="utm-term" placeholder="opcional" />
+            </div>
+          </div>
+          <label for="utm-content">utm_content</label>
+          <input type="text" id="utm-content" placeholder="opcional" />
+          <div class="preview-url" id="utm-preview" style="margin-top:0;">A prévia da URL com UTM aparecerá aqui.</div>
+          <button type="button" class="btn-secondary" id="apply-utm-btn">Aplicar UTM na URL de destino</button>
+        </div>
+
+        <div id="active-wrapper" class="hidden">
+          <label><input type="checkbox" id="is-active" style="width:auto;display:inline-block;margin-right:6px;" />Link ativo</label>
+        </div>
+
+        <div class="error-msg" id="link-error-msg"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancel-link-btn">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal QR Code -->
+  <div class="modal-backdrop hidden" id="qr-modal-backdrop">
+    <div class="modal qr-preview">
+      <h2>QR Code</h2>
+      <img id="qr-image" src="" alt="QR Code" />
+      <div class="modal-actions" style="justify-content:center;">
+        <a class="btn-secondary" id="qr-download-png" download>Baixar PNG</a>
+        <a class="btn-secondary" id="qr-download-svg" download>Baixar SVG</a>
+        <button type="button" class="btn-primary" id="close-qr-btn">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/utm-builder.js"></script>
+  <script src="/assets/js/dashboard.js"></script>
+</body>
+</html>
