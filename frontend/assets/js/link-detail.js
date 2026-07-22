@@ -120,4 +120,5 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
   location.href = "/login.html";
 });
 
+initNav();
 loadLinkDetail().catch((err) => console.error(err));

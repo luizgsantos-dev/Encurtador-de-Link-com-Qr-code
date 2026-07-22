@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usuários - Encurtador de Links</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1>Encurtador de Links</h1>
+    <nav class="topnav" id="topnav">
+      <a href="/dashboard.html">Links</a>
+      <a href="/groups.html" class="admin-only hidden">Grupos</a>
+      <a href="/users.html" class="admin-only hidden">Usuários</a>
+    </nav>
+    <button class="btn-secondary" id="logout-btn">Sair</button>
+  </div>
+
+  <div class="container">
+    <div class="section-header">
+      <h2>Usuários</h2>
+      <button class="btn-primary" id="new-user-btn">+ Novo usuário</button>
+    </div>
+
+    <div class="card">
+      <table id="users-table">
+        <thead>
+          <tr>
+            <th>Usuário</th>
+            <th>Grupos</th>
+            <th>Papel</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+      <div class="empty-state hidden" id="empty-state">Nenhum usuário cadastrado.</div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="user-modal-backdrop">
+    <div class="modal">
+      <h2 id="user-modal-title">Novo usuário</h2>
+      <form id="user-form">
+        <input type="hidden" id="user-id" />
+
+        <label for="username">Usuário</label>
+        <input type="text" id="username" required autocomplete="off" />
+
+        <label for="password">Senha <span class="hint" id="password-hint"></span></label>
+        <input type="password" id="password" autocomplete="new-password" />
+
+        <label><input type="checkbox" id="is-admin" style="width:auto;display:inline-block;margin-right:6px;" />Administrador</label>
+
+        <div id="active-wrapper" class="hidden" style="margin-top:8px;">
+          <label><input type="checkbox" id="is-active" style="width:auto;display:inline-block;margin-right:6px;" />Usuário ativo</label>
+        </div>
+
+        <label style="margin-top:12px;">Grupos</label>
+        <div id="groups-checkboxes" class="checkbox-list"></div>
+
+        <div class="error-msg" id="user-error-msg"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancel-user-btn">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/nav.js"></script>
+  <script src="/assets/js/users.js"></script>
+</body>
+</html>

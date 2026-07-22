@@ -1,4 +1,5 @@
 let currentLinks = [];
+let currentGroups = [];
 
 function escapeHtml(value) {
   const div = document.createElement("div");
@@ -32,6 +33,7 @@ function renderLinks(links) {
           <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(link.destination_url)}">
             ${escapeHtml(link.destination_url)}
           </td>
+          <td>${escapeHtml(link.group_name) || "<em>Sem grupo</em>"}</td>
           <td><a href="/link-detail.html?id=${link.id}">${link.total_clicks}</a></td>
           <td>${statusBadge}</td>
           <td class="actions-cell">
@@ -51,6 +53,14 @@ async function loadLinks() {
   renderLinks(currentLinks);
 }
 
+async function loadGroups() {
+  currentGroups = await api.listGroups();
+  const select = document.getElementById("link-group");
+  select.innerHTML = currentGroups
+    .map((group) => `<option value="${group.id}">${escapeHtml(group.name)}</option>`)
+    .join("");
+}
+
 function openLinkModal(link = null) {
   const backdrop = document.getElementById("link-modal-backdrop");
   const title = document.getElementById("link-modal-title");
@@ -68,6 +78,7 @@ function openLinkModal(link = null) {
     document.getElementById("title").value = link.title || "";
     document.getElementById("destination-url").value = link.destination_url;
     document.getElementById("is-active").checked = link.is_active;
+    document.getElementById("link-group").value = link.group_id || "";
     customCodeWrapper.classList.add("hidden");
     activeWrapper.classList.remove("hidden");
   } else {
@@ -92,14 +103,25 @@ async function handleLinkFormSubmit(event) {
   const id = document.getElementById("link-id").value;
   const title = document.getElementById("title").value.trim() || null;
   const destinationUrl = document.getElementById("destination-url").value.trim();
+  const groupId = document.getElementById("link-group").value;
 
   try {
     if (id) {
       const isActive = document.getElementById("is-active").checked;
-      await api.updateLink(id, { title, destination_url: destinationUrl, is_active: isActive });
+      await api.updateLink(id, {
+        title,
+        destination_url: destinationUrl,
+        is_active: isActive,
+        group_id: groupId,
+      });
     } else {
       const customCode = document.getElementById("custom-code").value.trim() || null;
-      await api.createLink({ title, destination_url: destinationUrl, custom_code: customCode });
+      await api.createLink({
+        title,
+        destination_url: destinationUrl,
+        custom_code: customCode,
+        group_id: groupId,
+      });
     }
     closeLinkModal();
     await loadLinks();
@@ -155,7 +177,13 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
   location.href = "/login.html";
 });
 
-initUtmBuilder();
-initModals();
-initTableActions();
-loadLinks().catch((err) => console.error(err));
+async function init() {
+  initUtmBuilder();
+  initModals();
+  initTableActions();
+  await initNav();
+  await loadGroups();
+  await loadLinks();
+}
+
+init().catch((err) => console.error(err));

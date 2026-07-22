@@ -6,20 +6,26 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Click, Link
+from app.models import Click, Link, User
 from app.schemas import DailyClicks, DeviceCount, LinkStats, ReferrerCount
 from app.security import get_current_user
 
-router = APIRouter(prefix="/api/links", tags=["stats"], dependencies=[Depends(get_current_user)])
+router = APIRouter(prefix="/api/links", tags=["stats"])
 
 DAYS_WINDOW = 30
 TOP_REFERRERS_LIMIT = 5
 
 
 @router.get("/{link_id}/stats", response_model=LinkStats)
-async def get_link_stats(link_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def get_link_stats(
+    link_id: uuid.UUID, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
+):
     link = await db.get(Link, link_id)
     if link is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link não encontrado")
+    if not user.is_admin and (
+        link.group_id is None or link.group_id not in {group.id for group in user.groups}
+    ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link não encontrado")
 
     total_clicks = await db.scalar(select(func.count(Click.id)).where(Click.link_id == link_id))

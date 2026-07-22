@@ -33,6 +33,7 @@ const api = {
   login: (username, password) =>
     apiRequest("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
   logout: () => apiRequest("/auth/logout", { method: "POST" }),
+  me: () => apiRequest("/auth/me"),
   listLinks: () => apiRequest("/links"),
   getLink: (id) => apiRequest(`/links/${id}`),
   createLink: (payload) => apiRequest("/links", { method: "POST", body: JSON.stringify(payload) }),
@@ -41,4 +42,14 @@ const api = {
   deleteLink: (id) => apiRequest(`/links/${id}`, { method: "DELETE" }),
   getStats: (id) => apiRequest(`/links/${id}/stats`),
   qrCodeUrl: (id, format = "png") => `${API_BASE}/links/${id}/qrcode?format=${format}`,
+  listGroups: () => apiRequest("/groups"),
+  createGroup: (payload) => apiRequest("/groups", { method: "POST", body: JSON.stringify(payload) }),
+  updateGroup: (id, payload) =>
+    apiRequest(`/groups/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deleteGroup: (id) => apiRequest(`/groups/${id}`, { method: "DELETE" }),
+  listUsers: () => apiRequest("/users"),
+  createUser: (payload) => apiRequest("/users", { method: "POST", body: JSON.stringify(payload) }),
+  updateUser: (id, payload) =>
+    apiRequest(`/users/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deleteUser: (id) => apiRequest(`/users/${id}`, { method: "DELETE" }),
 };

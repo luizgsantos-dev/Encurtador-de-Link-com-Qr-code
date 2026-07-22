@@ -9,6 +9,11 @@
 <body>
   <div class="topbar">
     <h1>Encurtador de Links</h1>
+    <nav class="topnav" id="topnav">
+      <a href="/dashboard.html">Links</a>
+      <a href="/groups.html" class="admin-only hidden">Grupos</a>
+      <a href="/users.html" class="admin-only hidden">Usuários</a>
+    </nav>
     <button class="btn-secondary" id="logout-btn">Sair</button>
   </div>
 
@@ -53,6 +58,7 @@
   </div>
 
   <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/nav.js"></script>
   <script src="/assets/js/link-detail.js"></script>
 </body>
 </html>

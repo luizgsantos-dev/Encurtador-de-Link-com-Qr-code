@@ -334,3 +334,48 @@ canvas {
   max-width: 220px;
   margin: 12px 0;
 }
+
+.topnav {
+  display: flex;
+  gap: 20px;
+}
+
+.topnav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.topnav a:hover {
+  color: var(--primary);
+}
+
+.hint {
+  font-weight: 400;
+  text-transform: none;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.checkbox-list {
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 14px;
+}
+
+.checkbox-list label {
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.checkbox-list input[type="checkbox"] {
+  width: auto;
+  margin-bottom: 0;
+}

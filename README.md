@@ -5,8 +5,8 @@ code, UTM builder e estatísticas de cliques (total, por dia, por dispositivo e 
 
 ## Como rodar
 
-1. Copie o arquivo de variáveis de ambiente e ajuste os valores (usuário/senha do admin, senha do
-   banco, `JWT_SECRET`):
+1. Copie o arquivo de variáveis de ambiente e ajuste os valores (usuário/senha do admin inicial,
+   senha do banco, `JWT_SECRET`):
 
    ```
    cp .env.example .env
@@ -19,23 +19,35 @@ code, UTM builder e estatísticas de cliques (total, por dia, por dispositivo e 
    ```
 
 3. Acesse `http://localhost:8080/login.html` (ou a porta definida em `WEB_PORT`) e entre com
-   `ADMIN_USERNAME` / `ADMIN_PASSWORD`.
+   `ADMIN_USERNAME` / `ADMIN_PASSWORD`. Esse usuário admin só é criado automaticamente na primeira
+   inicialização (banco sem nenhum usuário).
+4. Como admin, crie grupos em **Grupos** (ex: Marketing, Relacionamento) e usuários em
+   **Usuários**, associando cada um aos grupos que deve enxergar. Um usuário comum só vê e gerencia
+   links dos grupos aos quais pertence; o admin enxerga todos os grupos e links.
 
 Se a solução for exposta publicamente atrás de HTTPS, ajuste `BASE_URL` para o domínio real e
 `COOKIE_SECURE=true` no `.env`.
 
 ## Arquitetura
 
-- **db**: PostgreSQL, guarda links e cliques.
-- **api**: FastAPI — CRUD de links, autenticação (JWT em cookie httponly), geração de QR code,
-  estatísticas e o próprio redirecionamento (`GET /{codigo}`).
+- **db**: PostgreSQL, guarda usuários, grupos, links e cliques.
+- **api**: FastAPI — CRUD de links/usuários/grupos, autenticação (JWT em cookie httponly, senha com
+  hash bcrypt), geração de QR code, estatísticas e o próprio redirecionamento (`GET /{codigo}`).
 - **web**: Nginx, serve o painel estático e atua como proxy reverso único na porta 8080:
   - `/api/*` → backend
-  - `/login.html`, `/dashboard.html`, `/link-detail.html`, `/assets/*` → painel
+  - `/login.html`, `/dashboard.html`, `/link-detail.html`, `/users.html`, `/groups.html`,
+    `/assets/*` → painel
   - qualquer outro caminho (`/{codigo}`) → backend, que faz o redirect e registra o clique
 
 ## Funcionalidades
 
+- Login multiusuário: cada conta tem usuário/senha próprios; apenas administradores criam e
+  gerenciam contas (não há autocadastro).
+- Grupos configuráveis pelo admin (ex: Marketing, Relacionamento): cada usuário pode pertencer a
+  vários grupos e só enxerga os links dos grupos aos quais pertence. Administradores enxergam todos
+  os grupos e links.
+- Ao criar ou editar um link, o usuário escolhe manualmente a qual grupo ele pertence (entre os
+  grupos aos quais tem acesso).
 - Link curto estático: o código nunca muda, mas o destino pode ser editado quando quiser.
 - Geração de QR code (PNG ou SVG) apontando para o link curto.
 - UTM Builder no formulário de criação/edição: monta a URL de destino com `utm_source`,

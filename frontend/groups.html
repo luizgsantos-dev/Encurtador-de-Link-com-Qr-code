@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grupos - Encurtador de Links</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1>Encurtador de Links</h1>
+    <nav class="topnav" id="topnav">
+      <a href="/dashboard.html">Links</a>
+      <a href="/groups.html" class="admin-only hidden">Grupos</a>
+      <a href="/users.html" class="admin-only hidden">Usuários</a>
+    </nav>
+    <button class="btn-secondary" id="logout-btn">Sair</button>
+  </div>
+
+  <div class="container">
+    <div class="section-header">
+      <h2>Grupos</h2>
+      <button class="btn-primary" id="new-group-btn">+ Novo grupo</button>
+    </div>
+
+    <div class="card">
+      <table id="groups-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="groups-tbody"></tbody>
+      </table>
+      <div class="empty-state hidden" id="empty-state">Nenhum grupo cadastrado.</div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="group-modal-backdrop">
+    <div class="modal">
+      <h2 id="group-modal-title">Novo grupo</h2>
+      <form id="group-form">
+        <input type="hidden" id="group-id" />
+
+        <label for="group-name">Nome</label>
+        <input type="text" id="group-name" required placeholder="Ex: Marketing" />
+
+        <div class="error-msg" id="group-error-msg"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancel-group-btn">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/nav.js"></script>
+  <script src="/assets/js/groups.js"></script>
+</body>
+</html>

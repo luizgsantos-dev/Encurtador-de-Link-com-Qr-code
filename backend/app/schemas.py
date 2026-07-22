@@ -16,6 +16,7 @@ class LinkCreate(BaseModel):
     destination_url: str
     title: str | None = None
     custom_code: str | None = None
+    group_id: uuid.UUID
 
     @field_validator("destination_url")
     @classmethod
@@ -40,6 +41,7 @@ class LinkUpdate(BaseModel):
     destination_url: str | None = None
     title: str | None = None
     is_active: bool | None = None
+    group_id: uuid.UUID | None = None
 
     @field_validator("destination_url")
     @classmethod
@@ -61,6 +63,109 @@ class LinkOut(BaseModel):
     updated_at: datetime
     total_clicks: int = 0
     short_url: str
+    group_id: uuid.UUID | None
+    group_name: str | None
+
+    class Config:
+        from_attributes = True
+
+
+class GroupOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class GroupCreate(BaseModel):
+    name: str
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("name não pode ser vazio")
+        return value
+
+
+class GroupUpdate(BaseModel):
+    name: str
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("name não pode ser vazio")
+        return value
+
+
+class UserGroupOut(BaseModel):
+    id: uuid.UUID
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    is_admin: bool = False
+    group_ids: list[uuid.UUID] = Field(default_factory=list)
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 3:
+            raise ValueError("username deve ter ao menos 3 caracteres")
+        return value
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if len(value) < 6:
+            raise ValueError("password deve ter ao menos 6 caracteres")
+        return value
+
+
+class UserUpdate(BaseModel):
+    password: str | None = None
+    is_admin: bool | None = None
+    is_active: bool | None = None
+    group_ids: list[uuid.UUID] | None = None
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str | None) -> str | None:
+        if value is None or value == "":
+            return None
+        if len(value) < 6:
+            raise ValueError("password deve ter ao menos 6 caracteres")
+        return value
+
+
+class UserOut(BaseModel):
+    id: uuid.UUID
+    username: str
+    is_admin: bool
+    is_active: bool
+    created_at: datetime
+    groups: list[UserGroupOut]
+
+    class Config:
+        from_attributes = True
+
+
+class MeOut(BaseModel):
+    id: uuid.UUID
+    username: str
+    is_admin: bool
+    groups: list[UserGroupOut]
 
     class Config:
         from_attributes = True

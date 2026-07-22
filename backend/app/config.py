@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     database_url: str
+    # usados apenas para criar o usuário admin inicial no primeiro start (banco vazio)
     admin_username: str
     admin_password: str
     jwt_secret: str
