@@ -17,6 +17,7 @@ class LinkCreate(BaseModel):
     title: str | None = None
     custom_code: str | None = None
     group_id: uuid.UUID
+    partner_id: uuid.UUID | None = None
 
     @field_validator("destination_url")
     @classmethod
@@ -42,6 +43,8 @@ class LinkUpdate(BaseModel):
     title: str | None = None
     is_active: bool | None = None
     group_id: uuid.UUID | None = None
+    partner_id: uuid.UUID | None = None
+    clear_partner: bool = False
 
     @field_validator("destination_url")
     @classmethod
@@ -65,6 +68,8 @@ class LinkOut(BaseModel):
     short_url: str
     group_id: uuid.UUID | None
     group_name: str | None
+    partner_id: uuid.UUID | None
+    partner_name: str | None
 
     class Config:
         from_attributes = True
@@ -101,6 +106,60 @@ class GroupUpdate(BaseModel):
         if not value:
             raise ValueError("name não pode ser vazio")
         return value
+
+
+class PartnerCreate(BaseModel):
+    name: str
+    social_media: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    description: str | None = None
+    partnership: str | None = None
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("name não pode ser vazio")
+        return value
+
+
+class PartnerUpdate(BaseModel):
+    name: str | None = None
+    social_media: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    description: str | None = None
+    partnership: str | None = None
+    is_active: bool | None = None
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            raise ValueError("name não pode ser vazio")
+        return value
+
+
+class PartnerOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    social_media: str | None
+    email: str | None
+    phone: str | None
+    description: str | None
+    partnership: str | None
+    is_active: bool
+    created_at: datetime
+    total_links: int = 0
+    total_clicks: int = 0
+
+    class Config:
+        from_attributes = True
 
 
 class UserGroupOut(BaseModel):
@@ -191,3 +250,17 @@ class LinkStats(BaseModel):
     daily_clicks: list[DailyClicks]
     device_breakdown: list[DeviceCount]
     top_referrers: list[ReferrerCount]
+
+
+class PartnerLinkStat(BaseModel):
+    id: uuid.UUID
+    title: str | None
+    short_code: str
+    short_url: str
+    total_clicks: int
+
+
+class PartnerStats(BaseModel):
+    total_clicks: int
+    daily_clicks: list[DailyClicks]
+    links: list[PartnerLinkStat]

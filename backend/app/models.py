@@ -48,6 +48,22 @@ class Group(Base):
     users: Mapped[list["User"]] = relationship(secondary=user_groups, back_populates="groups")
 
 
+class Partner(Base):
+    __tablename__ = "partners"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    social_media: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    partnership: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    links: Mapped[list["Link"]] = relationship(back_populates="partner")
+
+
 class Link(Base):
     __tablename__ = "links"
 
@@ -59,12 +75,16 @@ class Link(Base):
     group_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("groups.id", ondelete="SET NULL"), nullable=True, index=True
     )
+    partner_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("partners.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
     group: Mapped["Group | None"] = relationship()
+    partner: Mapped["Partner | None"] = relationship(back_populates="links")
     clicks: Mapped[list["Click"]] = relationship(
         back_populates="link", cascade="all, delete-orphan"
     )

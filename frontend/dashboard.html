@@ -12,6 +12,7 @@
     <nav class="topnav" id="topnav">
       <a href="/dashboard.html">Links</a>
       <a href="/groups.html" class="admin-only hidden">Grupos</a>
+      <a href="/partners.html" class="admin-only hidden">Parceiros</a>
       <a href="/users.html" class="admin-only hidden">Usuários</a>
     </nav>
     <button class="btn-secondary" id="logout-btn">Sair</button>
@@ -30,6 +31,7 @@
             <th>Título / Link curto</th>
             <th>Destino</th>
             <th>Grupo</th>
+            <th>Parceiro</th>
             <th>Cliques</th>
             <th>Status</th>
             <th>Ações</th>
@@ -50,6 +52,11 @@
 
         <label for="link-group">Grupo</label>
         <select id="link-group" required></select>
+
+        <label for="link-partner">Parceiro (opcional)</label>
+        <select id="link-partner">
+          <option value="">Sem parceiro</option>
+        </select>
 
         <label for="title">Título (opcional)</label>
         <input type="text" id="title" placeholder="Ex: Campanha de verão" />

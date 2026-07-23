@@ -1,5 +1,6 @@
 let currentLinks = [];
 let currentGroups = [];
+let currentPartners = [];
 
 function escapeHtml(value) {
   const div = document.createElement("div");
@@ -34,6 +35,7 @@ function renderLinks(links) {
             ${escapeHtml(link.destination_url)}
           </td>
           <td>${escapeHtml(link.group_name) || "<em>Sem grupo</em>"}</td>
+          <td>${escapeHtml(link.partner_name) || "<em>-</em>"}</td>
           <td><a href="/link-detail.html?id=${link.id}">${link.total_clicks}</a></td>
           <td>${statusBadge}</td>
           <td class="actions-cell">
@@ -61,6 +63,21 @@ async function loadGroups() {
     .join("");
 }
 
+async function loadPartners() {
+  try {
+    currentPartners = await api.listPartners();
+  } catch (err) {
+    currentPartners = [];
+    return;
+  }
+  const select = document.getElementById("link-partner");
+  select.innerHTML =
+    '<option value="">Sem parceiro</option>' +
+    currentPartners
+      .map((partner) => `<option value="${partner.id}">${escapeHtml(partner.name)}</option>`)
+      .join("");
+}
+
 function openLinkModal(link = null) {
   const backdrop = document.getElementById("link-modal-backdrop");
   const title = document.getElementById("link-modal-title");
@@ -79,6 +96,7 @@ function openLinkModal(link = null) {
     document.getElementById("destination-url").value = link.destination_url;
     document.getElementById("is-active").checked = link.is_active;
     document.getElementById("link-group").value = link.group_id || "";
+    document.getElementById("link-partner").value = link.partner_id || "";
     customCodeWrapper.classList.add("hidden");
     activeWrapper.classList.remove("hidden");
   } else {
@@ -104,6 +122,7 @@ async function handleLinkFormSubmit(event) {
   const title = document.getElementById("title").value.trim() || null;
   const destinationUrl = document.getElementById("destination-url").value.trim();
   const groupId = document.getElementById("link-group").value;
+  const partnerId = document.getElementById("link-partner").value;
 
   try {
     if (id) {
@@ -113,6 +132,8 @@ async function handleLinkFormSubmit(event) {
         destination_url: destinationUrl,
         is_active: isActive,
         group_id: groupId,
+        partner_id: partnerId || null,
+        clear_partner: !partnerId,
       });
     } else {
       const customCode = document.getElementById("custom-code").value.trim() || null;
@@ -121,6 +142,7 @@ async function handleLinkFormSubmit(event) {
         destination_url: destinationUrl,
         custom_code: customCode,
         group_id: groupId,
+        partner_id: partnerId || null,
       });
     }
     closeLinkModal();
@@ -183,6 +205,7 @@ async function init() {
   initTableActions();
   await initNav();
   await loadGroups();
+  await loadPartners();
   await loadLinks();
 }
 

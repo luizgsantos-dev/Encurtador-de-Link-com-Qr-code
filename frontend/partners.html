@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parceiros - Encurtador de Links</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1>Encurtador de Links</h1>
+    <nav class="topnav" id="topnav">
+      <a href="/dashboard.html">Links</a>
+      <a href="/groups.html" class="admin-only hidden">Grupos</a>
+      <a href="/partners.html" class="admin-only hidden">Parceiros</a>
+      <a href="/users.html" class="admin-only hidden">Usuários</a>
+    </nav>
+    <button class="btn-secondary" id="logout-btn">Sair</button>
+  </div>
+
+  <div class="container">
+    <div class="section-header">
+      <h2>Parceiros</h2>
+      <button class="btn-primary" id="new-partner-btn">+ Novo parceiro</button>
+    </div>
+
+    <div class="card">
+      <table id="partners-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Parceiro</th>
+            <th>Contato</th>
+            <th>Links</th>
+            <th>Cliques</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="partners-tbody"></tbody>
+      </table>
+      <div class="empty-state hidden" id="empty-state">Nenhum parceiro cadastrado.</div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="partner-modal-backdrop">
+    <div class="modal">
+      <h2 id="partner-modal-title">Novo parceiro</h2>
+      <form id="partner-form">
+        <input type="hidden" id="partner-id" />
+
+        <label for="partner-name">Nome</label>
+        <input type="text" id="partner-name" required placeholder="Ex: João Influencer" />
+
+        <label for="partner-social">Rede social</label>
+        <input type="text" id="partner-social" placeholder="Ex: @joaoinfluencer / instagram.com/joao" />
+
+        <label for="partner-email">E-mail</label>
+        <input type="email" id="partner-email" placeholder="contato@parceiro.com" />
+
+        <label for="partner-phone">Telefone</label>
+        <input type="text" id="partner-phone" placeholder="(11) 99999-9999" />
+
+        <label for="partner-description">Descrição</label>
+        <textarea id="partner-description" rows="3" placeholder="Quem é o parceiro, público, nicho..."></textarea>
+
+        <label for="partner-partnership">Parceria</label>
+        <textarea id="partner-partnership" rows="3" placeholder="Termos, comissão, período combinado..."></textarea>
+
+        <div id="active-wrapper" class="hidden">
+          <label><input type="checkbox" id="is-active" style="width:auto;display:inline-block;margin-right:6px;" />Parceiro ativo</label>
+        </div>
+
+        <div class="error-msg" id="partner-error-msg"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancel-partner-btn">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="partner-stats-backdrop">
+    <div class="modal" style="width:640px;">
+      <h2 id="partner-stats-title">Métricas do parceiro</h2>
+
+      <div class="stat-cards">
+        <div class="card stat-card">
+          <div class="value" id="partner-stat-total">0</div>
+          <div class="label">Total de cliques</div>
+        </div>
+      </div>
+
+      <canvas id="partner-clicks-chart" width="580" height="220"></canvas>
+
+      <h3 style="margin-top:20px;">Links do parceiro</h3>
+      <table id="partner-links-table">
+        <thead>
+          <tr>
+            <th>Link</th>
+            <th>Cliques</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-primary" id="close-partner-stats-btn">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/nav.js"></script>
+  <script src="/assets/js/partners.js"></script>
+</body>
+</html>

@@ -107,6 +107,9 @@ async function loadLinkDetail() {
   document.getElementById("link-short-url").textContent = link.short_url;
   document.getElementById("link-short-url").href = link.short_url;
   document.getElementById("link-destination").textContent = `Destino atual: ${link.destination_url}`;
+  document.getElementById("link-partner").textContent = link.partner_name
+    ? `Parceiro: ${link.partner_name}`
+    : "";
 
   document.getElementById("stat-total").textContent = stats.total_clicks;
 

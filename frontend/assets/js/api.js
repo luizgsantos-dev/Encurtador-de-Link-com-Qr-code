@@ -52,4 +52,10 @@ const api = {
   updateUser: (id, payload) =>
     apiRequest(`/users/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteUser: (id) => apiRequest(`/users/${id}`, { method: "DELETE" }),
+  listPartners: () => apiRequest("/partners"),
+  getPartnerStats: (id) => apiRequest(`/partners/${id}/stats`),
+  createPartner: (payload) => apiRequest("/partners", { method: "POST", body: JSON.stringify(payload) }),
+  updatePartner: (id, payload) =>
+    apiRequest(`/partners/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deletePartner: (id) => apiRequest(`/partners/${id}`, { method: "DELETE" }),
 };

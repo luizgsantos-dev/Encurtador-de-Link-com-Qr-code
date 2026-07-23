@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from app.config import get_settings
 from app.database import get_db
-from app.models import Click, Group, Link, User
+from app.models import Click, Group, Link, Partner, User
 from app.schemas import LinkCreate, LinkOut, LinkUpdate
 from app.security import get_current_user
 from app.utils.qrcode_gen import generate_qrcode_png, generate_qrcode_svg
@@ -30,7 +30,16 @@ def _to_link_out(link: Link, total_clicks: int) -> LinkOut:
         short_url=f"{settings.base_url}/{link.short_code}",
         group_id=link.group_id,
         group_name=link.group.name if link.group else None,
+        partner_id=link.partner_id,
+        partner_name=link.partner.name if link.partner else None,
     )
+
+
+async def _resolve_partner(partner_id: uuid.UUID, db: AsyncSession) -> Partner:
+    partner = await db.get(Partner, partner_id)
+    if partner is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Parceiro não encontrado")
+    return partner
 
 
 def _check_link_access(user: User, link: Link) -> None:
@@ -60,7 +69,9 @@ async def _generate_unique_code(db: AsyncSession) -> str:
 
 async def _get_link_or_404(link_id: uuid.UUID, db: AsyncSession) -> Link:
     result = await db.execute(
-        select(Link).where(Link.id == link_id).options(selectinload(Link.group))
+        select(Link)
+        .where(Link.id == link_id)
+        .options(selectinload(Link.group), selectinload(Link.partner))
     )
     link = result.scalar_one_or_none()
     if link is None:
@@ -78,7 +89,7 @@ async def list_links(db: AsyncSession = Depends(get_db), user: User = Depends(ge
         .outerjoin(Click, Click.link_id == Link.id)
         .group_by(Link.id)
         .order_by(Link.created_at.desc())
-        .options(selectinload(Link.group))
+        .options(selectinload(Link.group), selectinload(Link.partner))
     )
     if not user.is_admin:
         query = query.where(Link.group_id.in_([group.id for group in user.groups]))
@@ -92,6 +103,7 @@ async def create_link(
     payload: LinkCreate, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)
 ):
     group = await _ensure_group_access(user, payload.group_id, db)
+    partner = await _resolve_partner(payload.partner_id, db) if payload.partner_id else None
 
     if payload.custom_code:
         existing = await db.scalar(select(Link).where(Link.short_code == payload.custom_code))
@@ -102,12 +114,17 @@ async def create_link(
         code = await _generate_unique_code(db)
 
     link = Link(
-        short_code=code, destination_url=payload.destination_url, title=payload.title, group_id=group.id
+        short_code=code,
+        destination_url=payload.destination_url,
+        title=payload.title,
+        group_id=group.id,
+        partner_id=partner.id if partner else None,
     )
     db.add(link)
     await db.commit()
     await db.refresh(link, attribute_names=["created_at", "updated_at"])
     link.group = group
+    link.partner = partner
     return _to_link_out(link, total_clicks=0)
 
 
@@ -141,6 +158,13 @@ async def update_link(
         group = await _ensure_group_access(user, payload.group_id, db)
         link.group_id = group.id
         link.group = group
+    if payload.partner_id is not None:
+        partner = await _resolve_partner(payload.partner_id, db)
+        link.partner_id = partner.id
+        link.partner = partner
+    elif payload.clear_partner:
+        link.partner_id = None
+        link.partner = None
 
     await db.commit()
     await db.refresh(link, attribute_names=["updated_at"])

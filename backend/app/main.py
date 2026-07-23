@@ -6,7 +6,7 @@ from sqlalchemy import func, select, text
 from app.config import get_settings
 from app.database import Base, async_session_maker, engine
 from app.models import User
-from app.routers import auth, groups, links, redirect, stats, users
+from app.routers import auth, groups, links, partners, redirect, stats, users
 from app.security import hash_password
 
 settings = get_settings()
@@ -23,6 +23,15 @@ async def lifespan(app: FastAPI):
             text(
                 "ALTER TABLE links ADD CONSTRAINT links_group_id_fkey "
                 "FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE SET NULL"
+            )
+        )
+        # migração leve para bancos criados antes da introdução de parceiros
+        await conn.execute(text("ALTER TABLE links ADD COLUMN IF NOT EXISTS partner_id UUID"))
+        await conn.execute(text("ALTER TABLE links DROP CONSTRAINT IF EXISTS links_partner_id_fkey"))
+        await conn.execute(
+            text(
+                "ALTER TABLE links ADD CONSTRAINT links_partner_id_fkey "
+                "FOREIGN KEY (partner_id) REFERENCES partners(id) ON DELETE SET NULL"
             )
         )
 
@@ -47,6 +56,7 @@ app = FastAPI(title="Encurtador de Links", lifespan=lifespan)
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(groups.router)
+app.include_router(partners.router)
 app.include_router(links.router)
 app.include_router(stats.router)
 app.include_router(redirect.router)
