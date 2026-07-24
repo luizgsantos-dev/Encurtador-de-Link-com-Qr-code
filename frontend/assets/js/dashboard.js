@@ -78,6 +78,18 @@ async function loadPartners() {
       .join("");
 }
 
+function togglePartnerUtmBox() {
+  const partnerId = document.getElementById("link-partner").value;
+  document.getElementById("partner-utm-box").classList.toggle("hidden", !partnerId);
+}
+
+function resetPartnerUtmFields() {
+  document.getElementById("partner-utm-campaign").value = "";
+  document.getElementById("partner-utm-source").value = "";
+  document.getElementById("partner-utm-medium").value = "";
+  document.getElementById("partner-utm-term").value = "";
+}
+
 function openLinkModal(link = null) {
   const backdrop = document.getElementById("link-modal-backdrop");
   const title = document.getElementById("link-modal-title");
@@ -87,6 +99,7 @@ function openLinkModal(link = null) {
 
   document.getElementById("link-form").reset();
   resetUtmFields();
+  resetPartnerUtmFields();
   errorMsg.textContent = "";
 
   if (link) {
@@ -97,6 +110,10 @@ function openLinkModal(link = null) {
     document.getElementById("is-active").checked = link.is_active;
     document.getElementById("link-group").value = link.group_id || "";
     document.getElementById("link-partner").value = link.partner_id || "";
+    document.getElementById("partner-utm-campaign").value = link.utm_campaign || "";
+    document.getElementById("partner-utm-source").value = link.utm_source || "";
+    document.getElementById("partner-utm-medium").value = link.utm_medium || "";
+    document.getElementById("partner-utm-term").value = link.utm_term || "";
     customCodeWrapper.classList.add("hidden");
     activeWrapper.classList.remove("hidden");
   } else {
@@ -106,6 +123,7 @@ function openLinkModal(link = null) {
     activeWrapper.classList.add("hidden");
   }
 
+  togglePartnerUtmBox();
   backdrop.classList.remove("hidden");
 }
 
@@ -123,6 +141,14 @@ async function handleLinkFormSubmit(event) {
   const destinationUrl = document.getElementById("destination-url").value.trim();
   const groupId = document.getElementById("link-group").value;
   const partnerId = document.getElementById("link-partner").value;
+  const partnerUtm = partnerId
+    ? {
+        utm_campaign: document.getElementById("partner-utm-campaign").value.trim() || null,
+        utm_source: document.getElementById("partner-utm-source").value || null,
+        utm_medium: document.getElementById("partner-utm-medium").value.trim() || null,
+        utm_term: document.getElementById("partner-utm-term").value || null,
+      }
+    : {};
 
   try {
     if (id) {
@@ -134,6 +160,7 @@ async function handleLinkFormSubmit(event) {
         group_id: groupId,
         partner_id: partnerId || null,
         clear_partner: !partnerId,
+        ...partnerUtm,
       });
     } else {
       const customCode = document.getElementById("custom-code").value.trim() || null;
@@ -143,6 +170,7 @@ async function handleLinkFormSubmit(event) {
         custom_code: customCode,
         group_id: groupId,
         partner_id: partnerId || null,
+        ...partnerUtm,
       });
     }
     closeLinkModal();
@@ -192,6 +220,7 @@ function initModals() {
   document.getElementById("cancel-link-btn").addEventListener("click", closeLinkModal);
   document.getElementById("link-form").addEventListener("submit", handleLinkFormSubmit);
   document.getElementById("close-qr-btn").addEventListener("click", closeQrModal);
+  document.getElementById("link-partner").addEventListener("change", togglePartnerUtmBox);
 }
 
 document.getElementById("logout-btn").addEventListener("click", async () => {

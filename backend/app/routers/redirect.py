@@ -1,3 +1,5 @@
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
@@ -7,6 +9,25 @@ from app.models import Click, Link
 from app.utils.user_agent import detect_device_type
 
 router = APIRouter(tags=["redirect"])
+
+
+def _apply_structured_utm(destination_url: str, link: Link) -> str:
+    structured = {
+        "utm_campaign": link.utm_campaign,
+        "utm_source": link.utm_source,
+        "utm_medium": link.utm_medium,
+        "utm_term": link.utm_term,
+    }
+    structured = {key: value for key, value in structured.items() if value}
+    if not structured:
+        return destination_url
+
+    parts = urlsplit(destination_url)
+    query_pairs = [
+        (key, value) for key, value in parse_qsl(parts.query, keep_blank_values=True) if key not in structured
+    ]
+    query_pairs.extend(structured.items())
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query_pairs), parts.fragment))
 
 
 async def _record_click(link_id, ip_address: str | None, user_agent: str | None, referrer: str | None):
@@ -47,4 +68,5 @@ async def redirect_to_destination(
         request.headers.get("referer"),
     )
 
-    return RedirectResponse(url=link.destination_url, status_code=status.HTTP_302_FOUND)
+    final_url = _apply_structured_utm(link.destination_url, link)
+    return RedirectResponse(url=final_url, status_code=status.HTTP_302_FOUND)

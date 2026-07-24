@@ -2,9 +2,19 @@ import re
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 SHORT_CODE_RE = re.compile(r"^[a-zA-Z0-9_-]{3,64}$")
+DOMAIN_RE = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$")
+UTM_SOURCE_VALUES = {"influencer", "marca_parceira"}
+UTM_TERM_VALUES = {"ig", "facebook", "youtube", "tiktok", "qrcode"}
+
+
+def _normalize_utm_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
 
 
 class LoginRequest(BaseModel):
@@ -18,6 +28,10 @@ class LinkCreate(BaseModel):
     custom_code: str | None = None
     group_id: uuid.UUID
     partner_id: uuid.UUID | None = None
+    utm_campaign: str | None = None
+    utm_source: str | None = None
+    utm_medium: str | None = None
+    utm_term: str | None = None
 
     @field_validator("destination_url")
     @classmethod
@@ -37,6 +51,34 @@ class LinkCreate(BaseModel):
             )
         return value
 
+    @field_validator("utm_campaign", "utm_medium")
+    @classmethod
+    def validate_utm_text(cls, value: str | None) -> str | None:
+        return _normalize_utm_text(value)
+
+    @field_validator("utm_source")
+    @classmethod
+    def validate_utm_source(cls, value: str | None) -> str | None:
+        value = _normalize_utm_text(value)
+        if value is not None and value not in UTM_SOURCE_VALUES:
+            raise ValueError("utm_source deve ser 'influencer' ou 'marca_parceira'")
+        return value
+
+    @field_validator("utm_term")
+    @classmethod
+    def validate_utm_term(cls, value: str | None) -> str | None:
+        value = _normalize_utm_text(value)
+        if value is not None and value not in UTM_TERM_VALUES:
+            raise ValueError("utm_term deve ser um dos valores: ig, facebook, youtube, tiktok, qrcode")
+        return value
+
+    @model_validator(mode="after")
+    def validate_utm_requires_partner(self) -> "LinkCreate":
+        has_utm = any([self.utm_campaign, self.utm_source, self.utm_medium, self.utm_term])
+        if has_utm and not self.partner_id:
+            raise ValueError("utm_campaign, utm_source, utm_medium e utm_term só podem ser definidos em links vinculados a um parceiro")
+        return self
+
 
 class LinkUpdate(BaseModel):
     destination_url: str | None = None
@@ -45,6 +87,10 @@ class LinkUpdate(BaseModel):
     group_id: uuid.UUID | None = None
     partner_id: uuid.UUID | None = None
     clear_partner: bool = False
+    utm_campaign: str | None = None
+    utm_source: str | None = None
+    utm_medium: str | None = None
+    utm_term: str | None = None
 
     @field_validator("destination_url")
     @classmethod
@@ -53,6 +99,27 @@ class LinkUpdate(BaseModel):
             return None
         if not re.match(r"^https?://", value, re.IGNORECASE):
             raise ValueError("destination_url deve começar com http:// ou https://")
+        return value
+
+    @field_validator("utm_campaign", "utm_medium")
+    @classmethod
+    def validate_utm_text(cls, value: str | None) -> str | None:
+        return _normalize_utm_text(value)
+
+    @field_validator("utm_source")
+    @classmethod
+    def validate_utm_source(cls, value: str | None) -> str | None:
+        value = _normalize_utm_text(value)
+        if value is not None and value not in UTM_SOURCE_VALUES:
+            raise ValueError("utm_source deve ser 'influencer' ou 'marca_parceira'")
+        return value
+
+    @field_validator("utm_term")
+    @classmethod
+    def validate_utm_term(cls, value: str | None) -> str | None:
+        value = _normalize_utm_text(value)
+        if value is not None and value not in UTM_TERM_VALUES:
+            raise ValueError("utm_term deve ser um dos valores: ig, facebook, youtube, tiktok, qrcode")
         return value
 
 
@@ -70,6 +137,10 @@ class LinkOut(BaseModel):
     group_name: str | None
     partner_id: uuid.UUID | None
     partner_name: str | None
+    utm_campaign: str | None
+    utm_source: str | None
+    utm_medium: str | None
+    utm_term: str | None
 
     class Config:
         from_attributes = True
@@ -108,6 +179,17 @@ class GroupUpdate(BaseModel):
         return value
 
 
+def _validate_domain(value: str | None) -> str | None:
+    if value is None or value.strip() == "":
+        return None
+    value = value.strip().lower()
+    if re.match(r"^https?://", value) or "/" in value or " " in value:
+        raise ValueError("domain deve ser apenas o host, sem protocolo ou caminho (ex: joao.encurtador.com.br)")
+    if not DOMAIN_RE.match(value):
+        raise ValueError("domain inválido")
+    return value
+
+
 class PartnerCreate(BaseModel):
     name: str
     social_media: str | None = None
@@ -115,6 +197,7 @@ class PartnerCreate(BaseModel):
     phone: str | None = None
     description: str | None = None
     partnership: str | None = None
+    domain: str | None = None
 
     @field_validator("name")
     @classmethod
@@ -124,6 +207,11 @@ class PartnerCreate(BaseModel):
             raise ValueError("name não pode ser vazio")
         return value
 
+    @field_validator("domain")
+    @classmethod
+    def validate_domain(cls, value: str | None) -> str | None:
+        return _validate_domain(value)
+
 
 class PartnerUpdate(BaseModel):
     name: str | None = None
@@ -132,6 +220,8 @@ class PartnerUpdate(BaseModel):
     phone: str | None = None
     description: str | None = None
     partnership: str | None = None
+    domain: str | None = None
+    clear_domain: bool = False
     is_active: bool | None = None
 
     @field_validator("name")
@@ -144,6 +234,11 @@ class PartnerUpdate(BaseModel):
             raise ValueError("name não pode ser vazio")
         return value
 
+    @field_validator("domain")
+    @classmethod
+    def validate_domain(cls, value: str | None) -> str | None:
+        return _validate_domain(value)
+
 
 class PartnerOut(BaseModel):
     id: uuid.UUID
@@ -153,6 +248,7 @@ class PartnerOut(BaseModel):
     phone: str | None
     description: str | None
     partnership: str | None
+    domain: str | None
     is_active: bool
     created_at: datetime
     total_links: int = 0

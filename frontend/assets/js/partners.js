@@ -18,22 +18,18 @@ function renderPartners(partners) {
   emptyState.classList.add("hidden");
 
   tbody.innerHTML = partners
-    .map((partner, index) => {
+    .map((partner) => {
       const statusBadge = partner.is_active
         ? '<span class="badge badge-active">Ativo</span>'
         : '<span class="badge badge-inactive">Inativo</span>';
-      const contact = [partner.email, partner.phone].filter(Boolean).map(escapeHtml).join(" · ") || "<em>-</em>";
+      const contact = [partner.email, partner.phone].filter(Boolean).map(escapeHtml).join(" · ");
 
       return `
         <tr data-id="${partner.id}">
-          <td>${index + 1}º</td>
-          <td>
-            <div>${escapeHtml(partner.name)}</div>
-            ${partner.social_media ? `<div style="font-size:12px;color:var(--text-muted);">${escapeHtml(partner.social_media)}</div>` : ""}
-          </td>
-          <td>${contact}</td>
+          <td>${escapeHtml(partner.name)}</td>
+          <td>${contact || "<em>-</em>"}</td>
           <td>${partner.total_links}</td>
-          <td><a href="#" data-action="stats" data-id="${partner.id}">${partner.total_clicks}</a></td>
+          <td>${partner.total_clicks}</td>
           <td>${statusBadge}</td>
           <td class="actions-cell">
             <button class="btn-secondary" data-action="stats" data-id="${partner.id}">Métricas</button>
@@ -69,6 +65,7 @@ function openPartnerModal(partner = null) {
     document.getElementById("partner-phone").value = partner.phone || "";
     document.getElementById("partner-description").value = partner.description || "";
     document.getElementById("partner-partnership").value = partner.partnership || "";
+    document.getElementById("partner-domain").value = partner.domain || "";
     document.getElementById("is-active").checked = partner.is_active;
     activeWrapper.classList.remove("hidden");
   } else {
@@ -90,6 +87,7 @@ async function handlePartnerFormSubmit(event) {
   errorMsg.textContent = "";
 
   const id = document.getElementById("partner-id").value;
+  const domain = document.getElementById("partner-domain").value.trim() || null;
   const payload = {
     name: document.getElementById("partner-name").value.trim(),
     social_media: document.getElementById("partner-social").value.trim() || null,
@@ -97,11 +95,13 @@ async function handlePartnerFormSubmit(event) {
     phone: document.getElementById("partner-phone").value.trim() || null,
     description: document.getElementById("partner-description").value.trim() || null,
     partnership: document.getElementById("partner-partnership").value.trim() || null,
+    domain,
   };
 
   try {
     if (id) {
       payload.is_active = document.getElementById("is-active").checked;
+      payload.clear_domain = !domain;
       await api.updatePartner(id, payload);
     } else {
       await api.createPartner(payload);

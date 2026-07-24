@@ -1,16 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
 :root {
-  --bg: #f5f6f8;
+  --bg: #faf9f7;
   --surface: #ffffff;
-  --border: #e2e5ea;
-  --text: #1a1d23;
-  --text-muted: #6b7280;
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+  --border: #e8e3dd;
+  --text: #2b2d33;
+  --text-muted: #71757e;
+  --primary: #e2622d;
+  --primary-hover: #c94f1f;
   --danger: #dc2626;
   --danger-hover: #b91c1c;
   --success: #16a34a;
-  --radius: 10px;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 3px rgba(43, 45, 51, 0.06), 0 6px 16px rgba(226, 98, 45, 0.05);
+  --shadow-hover: 0 4px 10px rgba(43, 45, 51, 0.08), 0 10px 24px rgba(226, 98, 45, 0.09);
+  --font: "Poppins", "Montserrat", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -19,9 +24,31 @@
 
 body {
   margin: 0;
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  background: var(--bg);
+  overflow-x: hidden;
+  font-family: var(--font);
+  background-color: var(--bg);
+  background-image: repeating-linear-gradient(
+      135deg,
+      rgba(226, 98, 45, 0.045) 0px,
+      rgba(226, 98, 45, 0.045) 1px,
+      transparent 1px,
+      transparent 42px
+    ),
+    repeating-linear-gradient(
+      45deg,
+      rgba(43, 45, 51, 0.03) 0px,
+      rgba(43, 45, 51, 0.03) 1px,
+      transparent 1px,
+      transparent 42px
+    );
+  background-attachment: fixed;
   color: var(--text);
+}
+
+h1, h2, h3 {
+  text-transform: lowercase;
+  letter-spacing: 0.01em;
+  font-weight: 600;
 }
 
 .topbar {
@@ -45,6 +72,8 @@ body {
 }
 
 .card {
+  overflow-x: auto;
+  overflow-y: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -80,34 +109,43 @@ input, textarea {
   width: 100%;
   padding: 9px 11px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   margin-bottom: 14px;
   font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
 input:focus, textarea:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(226, 98, 45, 0.14);
 }
 
 button {
   cursor: pointer;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 9px 16px;
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease,
+    color 0.16s ease, border-color 0.16s ease;
 }
 
 .btn-primary {
   background: var(--primary);
-  color: white;
+  color: var(--text);
 }
 
 .btn-primary:hover {
   background: var(--primary-hover);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-hover);
 }
 
 .btn-danger {
@@ -119,6 +157,7 @@ button {
 .btn-danger:hover {
   background: var(--danger);
   color: white;
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -129,6 +168,8 @@ button {
 
 .btn-secondary:hover {
   background: var(--bg);
+  border-color: var(--primary);
+  transform: translateY(-1px);
 }
 
 .btn-block {
@@ -143,7 +184,7 @@ button {
 }
 
 table {
-  width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
 }
 
@@ -180,13 +221,34 @@ th {
 }
 
 .short-link {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
   font-family: "Cascadia Code", monospace;
   color: var(--primary);
   text-decoration: none;
 }
 
+/* dentro de tabelas, a largura da célula é indefinida no layout automático,
+   então um max-width em % não é respeitado — usamos um valor fixo aqui */
+td .short-link {
+  max-width: 200px;
+}
+
 .short-link:hover {
   text-decoration: underline;
+}
+
+.actions-cell,
+.col-actions {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: -8px 0 8px -8px rgba(43, 45, 51, 0.15);
 }
 
 .actions-cell {
@@ -209,11 +271,12 @@ th {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(43, 45, 51, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
+  animation: fade-in 0.18s ease;
 }
 
 .hidden {
@@ -227,6 +290,18 @@ th {
   width: 480px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: var(--shadow-hover);
+  animation: modal-in 0.2s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal h2 {
@@ -341,14 +416,35 @@ canvas {
 }
 
 .topnav a {
+  position: relative;
   color: var(--text-muted);
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
+  padding-bottom: 3px;
+  transition: color 0.16s ease;
+}
+
+.topnav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease;
 }
 
 .topnav a:hover {
   color: var(--primary);
+}
+
+.topnav a:hover::after {
+  transform: scaleX(1);
 }
 
 .hint {

@@ -34,6 +34,17 @@ async def lifespan(app: FastAPI):
                 "FOREIGN KEY (partner_id) REFERENCES partners(id) ON DELETE SET NULL"
             )
         )
+        # migração leve para bancos criados antes do domínio próprio de parceiro
+        await conn.execute(text("ALTER TABLE partners ADD COLUMN IF NOT EXISTS domain VARCHAR(255)"))
+        await conn.execute(text("ALTER TABLE partners DROP CONSTRAINT IF EXISTS partners_domain_key"))
+        await conn.execute(
+            text("ALTER TABLE partners ADD CONSTRAINT partners_domain_key UNIQUE (domain)")
+        )
+        # migração leve para bancos criados antes do UTM estruturado por parceiro
+        await conn.execute(text("ALTER TABLE links ADD COLUMN IF NOT EXISTS utm_campaign VARCHAR(255)"))
+        await conn.execute(text("ALTER TABLE links ADD COLUMN IF NOT EXISTS utm_source VARCHAR(32)"))
+        await conn.execute(text("ALTER TABLE links ADD COLUMN IF NOT EXISTS utm_medium VARCHAR(255)"))
+        await conn.execute(text("ALTER TABLE links ADD COLUMN IF NOT EXISTS utm_term VARCHAR(32)"))
 
     async with async_session_maker() as db:
         user_count = await db.scalar(select(func.count(User.id)))

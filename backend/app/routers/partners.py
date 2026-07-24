@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import get_settings
 from app.database import get_db
 from app.models import Click, Link, Partner
 from app.schemas import (
@@ -17,9 +16,9 @@ from app.schemas import (
     PartnerUpdate,
 )
 from app.security import require_admin
+from app.utils.urls import build_short_url
 
 router = APIRouter(prefix="/api/partners", tags=["partners"], dependencies=[Depends(require_admin)])
-settings = get_settings()
 
 DAYS_WINDOW = 30
 
@@ -33,6 +32,7 @@ def _to_partner_out(partner: Partner, total_links: int, total_clicks: int) -> Pa
         phone=partner.phone,
         description=partner.description,
         partnership=partner.partnership,
+        domain=partner.domain,
         is_active=partner.is_active,
         created_at=partner.created_at,
         total_links=total_links,
@@ -73,6 +73,11 @@ async def create_partner(payload: PartnerCreate, db: AsyncSession = Depends(get_
     if existing is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Parceiro já existe")
 
+    if payload.domain is not None:
+        existing_domain = await db.scalar(select(Partner).where(Partner.domain == payload.domain))
+        if existing_domain is not None:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Domínio já está em uso")
+
     partner = Partner(
         name=payload.name,
         social_media=payload.social_media,
@@ -80,6 +85,7 @@ async def create_partner(payload: PartnerCreate, db: AsyncSession = Depends(get_
         phone=payload.phone,
         description=payload.description,
         partnership=payload.partnership,
+        domain=payload.domain,
     )
     db.add(partner)
     await db.commit()
@@ -110,6 +116,15 @@ async def update_partner(
         partner.description = payload.description
     if payload.partnership is not None:
         partner.partnership = payload.partnership
+    if payload.domain is not None:
+        existing_domain = await db.scalar(
+            select(Partner).where(Partner.domain == payload.domain, Partner.id != partner_id)
+        )
+        if existing_domain is not None:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Domínio já está em uso")
+        partner.domain = payload.domain
+    elif payload.clear_domain:
+        partner.domain = None
     if payload.is_active is not None:
         partner.is_active = payload.is_active
 
@@ -132,7 +147,7 @@ async def delete_partner(partner_id: uuid.UUID, db: AsyncSession = Depends(get_d
 
 @router.get("/{partner_id}/stats", response_model=PartnerStats)
 async def get_partner_stats(partner_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    await _get_partner_or_404(partner_id, db)
+    partner = await _get_partner_or_404(partner_id, db)
 
     total_clicks = await db.scalar(
         select(func.count(Click.id)).join(Link, Click.link_id == Link.id).where(Link.partner_id == partner_id)
@@ -160,7 +175,7 @@ async def get_partner_stats(partner_id: uuid.UUID, db: AsyncSession = Depends(ge
             id=link.id,
             title=link.title,
             short_code=link.short_code,
-            short_url=f"{settings.base_url}/{link.short_code}",
+            short_url=build_short_url(link.short_code, partner.domain),
             total_clicks=link_total_clicks,
         )
         for link, link_total_clicks in links_result.all()

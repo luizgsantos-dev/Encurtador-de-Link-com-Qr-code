@@ -5,16 +5,15 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.config import get_settings
 from app.database import get_db
 from app.models import Click, Group, Link, Partner, User
 from app.schemas import LinkCreate, LinkOut, LinkUpdate
 from app.security import get_current_user
 from app.utils.qrcode_gen import generate_qrcode_png, generate_qrcode_svg
 from app.utils.shortcode import generate_short_code
+from app.utils.urls import build_short_url
 
 router = APIRouter(prefix="/api/links", tags=["links"])
-settings = get_settings()
 
 
 def _to_link_out(link: Link, total_clicks: int) -> LinkOut:
@@ -27,11 +26,15 @@ def _to_link_out(link: Link, total_clicks: int) -> LinkOut:
         created_at=link.created_at,
         updated_at=link.updated_at,
         total_clicks=total_clicks,
-        short_url=f"{settings.base_url}/{link.short_code}",
+        short_url=build_short_url(link.short_code, link.partner.domain if link.partner else None),
         group_id=link.group_id,
         group_name=link.group.name if link.group else None,
         partner_id=link.partner_id,
         partner_name=link.partner.name if link.partner else None,
+        utm_campaign=link.utm_campaign,
+        utm_source=link.utm_source,
+        utm_medium=link.utm_medium,
+        utm_term=link.utm_term,
     )
 
 
@@ -119,6 +122,10 @@ async def create_link(
         title=payload.title,
         group_id=group.id,
         partner_id=partner.id if partner else None,
+        utm_campaign=payload.utm_campaign,
+        utm_source=payload.utm_source,
+        utm_medium=payload.utm_medium,
+        utm_term=payload.utm_term,
     )
     db.add(link)
     await db.commit()
@@ -148,6 +155,23 @@ async def update_link(
     link = await _get_link_or_404(link_id, db)
     _check_link_access(user, link)
 
+    has_utm_in_payload = any(
+        [payload.utm_campaign, payload.utm_source, payload.utm_medium, payload.utm_term]
+    )
+    if payload.clear_partner and has_utm_in_payload:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Não é possível definir UTM ao remover o parceiro do link",
+        )
+    final_partner_id = payload.partner_id if payload.partner_id is not None else (
+        None if payload.clear_partner else link.partner_id
+    )
+    if final_partner_id is None and has_utm_in_payload:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="UTM estruturado requer um link vinculado a um parceiro",
+        )
+
     if payload.destination_url is not None:
         link.destination_url = payload.destination_url
     if payload.title is not None:
@@ -165,6 +189,18 @@ async def update_link(
     elif payload.clear_partner:
         link.partner_id = None
         link.partner = None
+        link.utm_campaign = None
+        link.utm_source = None
+        link.utm_medium = None
+        link.utm_term = None
+    if payload.utm_campaign is not None:
+        link.utm_campaign = payload.utm_campaign
+    if payload.utm_source is not None:
+        link.utm_source = payload.utm_source
+    if payload.utm_medium is not None:
+        link.utm_medium = payload.utm_medium
+    if payload.utm_term is not None:
+        link.utm_term = payload.utm_term
 
     await db.commit()
     await db.refresh(link, attribute_names=["updated_at"])
@@ -192,7 +228,7 @@ async def get_qrcode(
 ):
     link = await _get_link_or_404(link_id, db)
     _check_link_access(user, link)
-    short_url = f"{settings.base_url}/{link.short_code}"
+    short_url = build_short_url(link.short_code, link.partner.domain if link.partner else None)
 
     if format == "svg":
         content = generate_qrcode_svg(short_url)

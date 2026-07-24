@@ -28,13 +28,12 @@
       <table id="partners-table">
         <thead>
           <tr>
-            <th>#</th>
             <th>Parceiro</th>
             <th>Contato</th>
             <th>Links</th>
             <th>Cliques</th>
             <th>Status</th>
-            <th>Ações</th>
+            <th class="col-actions">Ações</th>
           </tr>
         </thead>
         <tbody id="partners-tbody"></tbody>
@@ -66,6 +65,10 @@
 
         <label for="partner-partnership">Parceria</label>
         <textarea id="partner-partnership" rows="3" placeholder="Termos, comissão, período combinado..."></textarea>
+
+        <label for="partner-domain">Domínio próprio (opcional)</label>
+        <input type="text" id="partner-domain" placeholder="Ex: joao.encurtador.com.br" />
+        <small style="display:block;margin-top:-10px;margin-bottom:14px;color:var(--text-muted);">Sem "http://" — a configuração de DNS/certificado é feita fora do sistema, por conta própria.</small>
 
         <div id="active-wrapper" class="hidden">
           <label><input type="checkbox" id="is-active" style="width:auto;display:inline-block;margin-right:6px;" />Parceiro ativo</label>

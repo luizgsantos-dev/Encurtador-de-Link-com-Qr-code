@@ -34,7 +34,7 @@
             <th>Parceiro</th>
             <th>Cliques</th>
             <th>Status</th>
-            <th>Ações</th>
+            <th class="col-actions">Ações</th>
           </tr>
         </thead>
         <tbody id="links-tbody"></tbody>
@@ -93,6 +93,33 @@
           <input type="text" id="utm-content" placeholder="opcional" />
           <div class="preview-url" id="utm-preview" style="margin-top:0;">A prévia da URL com UTM aparecerá aqui.</div>
           <button type="button" class="btn-secondary" id="apply-utm-btn">Aplicar UTM na URL de destino</button>
+        </div>
+
+        <div class="utm-box hidden" id="partner-utm-box">
+          <h3>UTM do parceiro</h3>
+          <label for="partner-utm-campaign">Nome da campanha</label>
+          <input type="text" id="partner-utm-campaign" placeholder="Ex: lancamento-verao" />
+
+          <label for="partner-utm-source">Tipo</label>
+          <select id="partner-utm-source">
+            <option value="">Selecione</option>
+            <option value="influencer">Influencer</option>
+            <option value="marca_parceira">Marca parceira</option>
+          </select>
+
+          <label for="partner-utm-medium">Nome (influencer/marca)</label>
+          <input type="text" id="partner-utm-medium" placeholder="Ex: joao-influencer" />
+
+          <label for="partner-utm-term">Canal</label>
+          <select id="partner-utm-term">
+            <option value="">Selecione</option>
+            <option value="ig">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="youtube">Youtube</option>
+            <option value="tiktok">TikTok</option>
+            <option value="qrcode">QR Code</option>
+          </select>
+          <div class="preview-url" style="margin-top:0;">Estes UTMs sempre prevalecem sobre os do UTM Builder acima, em caso de conflito de nome.</div>
         </div>
 
         <div id="active-wrapper" class="hidden">
