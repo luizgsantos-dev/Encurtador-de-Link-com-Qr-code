@@ -41,6 +41,7 @@ const api = {
     apiRequest(`/links/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteLink: (id) => apiRequest(`/links/${id}`, { method: "DELETE" }),
   getStats: (id) => apiRequest(`/links/${id}/stats`),
+  getDashboardOverview: () => apiRequest("/stats/overview"),
   qrCodeUrl: (id, format = "png") => `${API_BASE}/links/${id}/qrcode?format=${format}`,
   listGroups: () => apiRequest("/groups"),
   createGroup: (payload) => apiRequest("/groups", { method: "POST", body: JSON.stringify(payload) }),

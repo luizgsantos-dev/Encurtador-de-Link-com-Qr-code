@@ -41,6 +41,30 @@
       </table>
       <div class="empty-state hidden" id="empty-state">Nenhum link criado ainda.</div>
     </div>
+
+    <div class="section-header">
+      <h2>Visão geral (últimos 30 dias)</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Cliques por dia</h3>
+        <div class="chart-legend" id="overview-line-legend"></div>
+        <div style="position:relative;">
+          <canvas id="overview-line-chart" width="640" height="260"></canvas>
+          <div class="chart-tooltip hidden" id="overview-line-tooltip"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Links mais acessados</h3>
+        <div style="display:flex;gap:16px;align-items:flex-start;position:relative;">
+          <canvas id="overview-pie-chart" width="220" height="220"></canvas>
+          <div class="chart-tooltip hidden" id="overview-pie-tooltip"></div>
+          <div class="chart-legend" id="overview-pie-legend" style="flex:1;flex-direction:column;"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Modal criar/editar link -->
@@ -49,27 +73,33 @@
       <h2 id="link-modal-title">Novo link</h2>
       <form id="link-form">
         <input type="hidden" id="link-id" />
+        <input type="hidden" id="link-type" value="campaign" />
 
-        <label for="link-group">Grupo</label>
-        <select id="link-group" required></select>
+        <div class="link-type-toggle" style="display:flex;gap:8px;margin-bottom:18px;">
+          <button type="button" class="btn-primary link-type-btn" id="link-type-campaign-btn" data-type="campaign">Link de Campanha</button>
+          <button type="button" class="btn-secondary link-type-btn" id="link-type-partner-btn" data-type="partner">Link de Parceiro</button>
+        </div>
 
-        <label for="link-partner">Parceiro (opcional)</label>
-        <select id="link-partner">
-          <option value="">Sem parceiro</option>
-        </select>
+        <label>Grupo</label>
+        <div class="chip-group" id="link-group-chips"></div>
 
-        <label for="title">Título (opcional)</label>
-        <input type="text" id="title" placeholder="Ex: Campanha de verão" />
+        <div id="link-partner-section">
+          <label id="link-partner-label">Parceiro</label>
+          <div class="chip-group" id="link-partner-chips"></div>
+        </div>
+
+        <label for="title">Título</label>
+        <input type="text" id="title" required placeholder="Ex: Evento de lançamento" />
 
         <div id="custom-code-wrapper">
           <label for="custom-code">Código customizado (opcional)</label>
-          <input type="text" id="custom-code" placeholder="Ex: promo-verao" />
+          <input type="text" id="custom-code" placeholder="Ex: Desconto10" />
         </div>
 
         <label for="destination-url">URL de destino</label>
         <input type="text" id="destination-url" required placeholder="https://exemplo.com/pagina" />
 
-        <div class="utm-box">
+        <div class="utm-box" id="generic-utm-box">
           <h3>UTM Builder</h3>
           <div class="utm-grid">
             <div>
@@ -100,26 +130,14 @@
           <label for="partner-utm-campaign">Nome da campanha</label>
           <input type="text" id="partner-utm-campaign" placeholder="Ex: lancamento-verao" />
 
-          <label for="partner-utm-source">Tipo</label>
-          <select id="partner-utm-source">
-            <option value="">Selecione</option>
-            <option value="influencer">Influencer</option>
-            <option value="marca_parceira">Marca parceira</option>
-          </select>
+          <label>Tipo</label>
+          <div class="chip-group" id="partner-utm-source-chips"></div>
 
           <label for="partner-utm-medium">Nome (influencer/marca)</label>
           <input type="text" id="partner-utm-medium" placeholder="Ex: joao-influencer" />
 
-          <label for="partner-utm-term">Canal</label>
-          <select id="partner-utm-term">
-            <option value="">Selecione</option>
-            <option value="ig">Instagram</option>
-            <option value="facebook">Facebook</option>
-            <option value="youtube">Youtube</option>
-            <option value="tiktok">TikTok</option>
-            <option value="qrcode">QR Code</option>
-          </select>
-          <div class="preview-url" style="margin-top:0;">Estes UTMs sempre prevalecem sobre os do UTM Builder acima, em caso de conflito de nome.</div>
+          <label>Canal</label>
+          <div class="chip-group" id="partner-utm-term-chips"></div>
         </div>
 
         <div id="active-wrapper" class="hidden">

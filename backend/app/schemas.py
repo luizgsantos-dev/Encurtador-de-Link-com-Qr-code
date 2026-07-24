@@ -24,7 +24,7 @@ class LoginRequest(BaseModel):
 
 class LinkCreate(BaseModel):
     destination_url: str
-    title: str | None = None
+    title: str
     custom_code: str | None = None
     group_id: uuid.UUID
     partner_id: uuid.UUID | None = None
@@ -38,6 +38,14 @@ class LinkCreate(BaseModel):
     def validate_destination(cls, value: str) -> str:
         if not re.match(r"^https?://", value, re.IGNORECASE):
             raise ValueError("destination_url deve começar com http:// ou https://")
+        return value
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("title não pode ser vazio")
         return value
 
     @field_validator("custom_code")
@@ -99,6 +107,16 @@ class LinkUpdate(BaseModel):
             return None
         if not re.match(r"^https?://", value, re.IGNORECASE):
             raise ValueError("destination_url deve começar com http:// ou https://")
+        return value
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            raise ValueError("title não pode ser vazio")
         return value
 
     @field_validator("utm_campaign", "utm_medium")
@@ -360,3 +378,16 @@ class PartnerStats(BaseModel):
     total_clicks: int
     daily_clicks: list[DailyClicks]
     links: list[PartnerLinkStat]
+
+
+class TopLinkStat(BaseModel):
+    id: uuid.UUID
+    title: str | None
+    total_clicks: int
+
+
+class DashboardOverview(BaseModel):
+    daily_clicks_total: list[DailyClicks]
+    daily_clicks_partner: list[DailyClicks]
+    daily_clicks_general: list[DailyClicks]
+    top_links: list[TopLinkStat]

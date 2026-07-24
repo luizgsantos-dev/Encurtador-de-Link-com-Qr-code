@@ -70,6 +70,7 @@ app.include_router(groups.router)
 app.include_router(partners.router)
 app.include_router(links.router)
 app.include_router(stats.router)
+app.include_router(stats.overview_router)
 app.include_router(redirect.router)
 
 
