@@ -16,6 +16,7 @@ services:
 
   api:
     build: ./backend
+    image: encurtador-api:latest
     restart: unless-stopped
     env_file: .env
     depends_on:
@@ -24,9 +25,8 @@ services:
 
   web:
     build: ./frontend
+    image: encurtador-web:latest
     restart: unless-stopped
-    ports:
-      - "${WEB_PORT:-8080}:80"
     depends_on:
       - api
 

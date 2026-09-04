@@ -1,0 +1,8 @@
+# Usado automaticamente pelo `docker compose up` local (dev).
+# Em produção, o deploy usa só `docker-compose.yml` via `docker stack deploy`,
+# então este arquivo é ignorado e a porta não fica exposta direto no host
+# (o tráfego chega pelo Traefik, via rede network_public).
+services:
+  web:
+    ports:
+      - "${WEB_PORT:-8080}:80"

@@ -34,9 +34,11 @@ function renderUsers(users) {
           <td>${groupNames}</td>
           <td>${roleBadge}</td>
           <td>${statusBadge}</td>
-          <td class="actions-cell">
-            <button class="btn-secondary" data-action="edit" data-id="${user.id}">Editar</button>
-            <button class="btn-danger" data-action="delete" data-id="${user.id}">Excluir</button>
+          <td>
+            <div class="actions-buttons">
+              <button class="btn-secondary" data-action="edit" data-id="${user.id}">Editar</button>
+              <button class="btn-danger" data-action="delete" data-id="${user.id}">Excluir</button>
+            </div>
           </td>
         </tr>
       `;

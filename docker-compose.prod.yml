@@ -1,0 +1,48 @@
+# Acréscimos exclusivos de produção (Docker Swarm + Traefik).
+# Uso: docker stack deploy -c docker-compose.yml -c docker-compose.prod.yml encurtador
+#
+# Não é carregado automaticamente pelo `docker compose up` local — só entra em
+# vigor quando referenciado explicitamente, então não interfere no dev.
+#
+# Antes de usar:
+# 1. Troque __NODE_HOSTNAME__ pelo hostname real (ver `docker node ls`) da
+#    máquina onde tudo (db, api, web) deve ficar fixado.
+# 2. Confirme que a rede "network_public" já existe no swarm (é a mesma usada
+#    pelo Traefik, ver traefik.yml: --providers.swarm.network=network_public).
+# 3. Gere as imagens ANTES do deploy, na própria máquina de destino (o Swarm
+#    não faz build a partir de "build:" em `docker stack deploy`):
+#      docker compose build
+#    (isso cria localmente encurtador-api:latest e encurtador-web:latest,
+#    exatamente os nomes referenciados em "image:" no docker-compose.yml)
+
+services:
+  db:
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == __NODE_HOSTNAME__
+
+  api:
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == __NODE_HOSTNAME__
+
+  web:
+    networks:
+      - default
+      - network_public
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == __NODE_HOSTNAME__
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.encurtador.rule=Host(`links.grupovivart.com.br`)"
+        - "traefik.http.routers.encurtador.entrypoints=websecure"
+        - "traefik.http.routers.encurtador.tls.certresolver=le"
+        - "traefik.http.services.encurtador.loadbalancer.server.port=80"
+
+networks:
+  network_public:
+    external: true

@@ -235,6 +235,7 @@ th, td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   font-size: 14px;
+  white-space: nowrap;
 }
 
 th {
@@ -284,21 +285,12 @@ td .short-link {
   text-decoration: underline;
 }
 
-.actions-cell,
-.col-actions {
-  position: sticky;
-  right: 0;
-  z-index: 1;
-  background: var(--surface);
-  box-shadow: -8px 0 8px -8px rgba(43, 45, 51, 0.15);
-}
-
-.actions-cell {
+.actions-buttons {
   display: flex;
   gap: 6px;
 }
 
-.actions-cell button {
+.actions-buttons button {
   padding: 6px 10px;
   font-size: 13px;
 }

@@ -62,11 +62,13 @@ function renderLinks(links) {
           <td>${escapeHtml(link.partner_name) || "<em>-</em>"}</td>
           <td><a href="/link-detail.html?id=${link.id}">${link.total_clicks}</a></td>
           <td>${statusBadge}</td>
-          <td class="actions-cell">
-            <button class="btn-secondary" data-action="stats" data-id="${link.id}">Stats</button>
-            <button class="btn-secondary" data-action="qr" data-id="${link.id}">QR</button>
-            <button class="btn-secondary" data-action="edit" data-id="${link.id}">Editar</button>
-            <button class="btn-danger" data-action="delete" data-id="${link.id}">Excluir</button>
+          <td>
+            <div class="actions-buttons">
+              <button class="btn-secondary" data-action="stats" data-id="${link.id}">Stats</button>
+              <button class="btn-secondary" data-action="qr" data-id="${link.id}">QR</button>
+              <button class="btn-secondary" data-action="edit" data-id="${link.id}">Editar</button>
+              <button class="btn-danger" data-action="delete" data-id="${link.id}">Excluir</button>
+            </div>
           </td>
         </tr>
       `;

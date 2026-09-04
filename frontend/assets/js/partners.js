@@ -31,10 +31,12 @@ function renderPartners(partners) {
           <td>${partner.total_links}</td>
           <td>${partner.total_clicks}</td>
           <td>${statusBadge}</td>
-          <td class="actions-cell">
-            <button class="btn-secondary" data-action="stats" data-id="${partner.id}">Métricas</button>
-            <button class="btn-secondary" data-action="edit" data-id="${partner.id}">Editar</button>
-            <button class="btn-danger" data-action="delete" data-id="${partner.id}">Excluir</button>
+          <td>
+            <div class="actions-buttons">
+              <button class="btn-secondary" data-action="stats" data-id="${partner.id}">Métricas</button>
+              <button class="btn-secondary" data-action="edit" data-id="${partner.id}">Editar</button>
+              <button class="btn-danger" data-action="delete" data-id="${partner.id}">Excluir</button>
+            </div>
           </td>
         </tr>
       `;
