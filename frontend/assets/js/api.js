@@ -42,6 +42,13 @@ const api = {
   deleteLink: (id) => apiRequest(`/links/${id}`, { method: "DELETE" }),
   getStats: (id) => apiRequest(`/links/${id}/stats`),
   getDashboardOverview: () => apiRequest("/stats/overview"),
+  getFunnel: ({ start, end } = {}) => {
+    const params = new URLSearchParams();
+    if (start) params.set("start", start);
+    if (end) params.set("end", end);
+    const query = params.toString();
+    return apiRequest(`/stats/funnel${query ? `?${query}` : ""}`);
+  },
   qrCodeUrl: (id, format = "png") => `${API_BASE}/links/${id}/qrcode?format=${format}`,
   listGroups: () => apiRequest("/groups"),
   createGroup: (payload) => apiRequest("/groups", { method: "POST", body: JSON.stringify(payload) }),

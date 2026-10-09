@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, Table, Text, func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, Table, Text, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -83,6 +83,10 @@ class Link(Base):
     utm_source: Mapped[str | None] = mapped_column(String(32), nullable=True)
     utm_medium: Mapped[str | None] = mapped_column(String(255), nullable=True)
     utm_term: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    # link de redirecionamento: mostra uma página com contagem regressiva antes de redirecionar
+    is_redirect_page: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=text("false"), nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

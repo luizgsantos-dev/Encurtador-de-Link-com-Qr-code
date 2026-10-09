@@ -35,6 +35,7 @@ def _to_link_out(link: Link, total_clicks: int) -> LinkOut:
         utm_source=link.utm_source,
         utm_medium=link.utm_medium,
         utm_term=link.utm_term,
+        is_redirect_page=link.is_redirect_page,
     )
 
 
@@ -126,6 +127,7 @@ async def create_link(
         utm_source=payload.utm_source,
         utm_medium=payload.utm_medium,
         utm_term=payload.utm_term,
+        is_redirect_page=payload.is_redirect_page,
     )
     db.add(link)
     await db.commit()
@@ -171,6 +173,14 @@ async def update_link(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="UTM estruturado requer um link vinculado a um parceiro",
         )
+    final_is_redirect_page = (
+        payload.is_redirect_page if payload.is_redirect_page is not None else link.is_redirect_page
+    )
+    if final_is_redirect_page and final_partner_id is not None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Link de redirecionamento não pode ser vinculado a um parceiro",
+        )
 
     if payload.destination_url is not None:
         link.destination_url = payload.destination_url
@@ -178,6 +188,8 @@ async def update_link(
         link.title = payload.title
     if payload.is_active is not None:
         link.is_active = payload.is_active
+    if payload.is_redirect_page is not None:
+        link.is_redirect_page = payload.is_redirect_page
     if payload.group_id is not None:
         group = await _ensure_group_access(user, payload.group_id, db)
         link.group_id = group.id

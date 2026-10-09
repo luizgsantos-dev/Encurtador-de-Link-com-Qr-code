@@ -11,6 +11,7 @@
     <h1>Encurtador de Links</h1>
     <nav class="topnav" id="topnav">
       <a href="/dashboard.html">Links</a>
+      <a href="/funnel.html">Funil</a>
       <a href="/groups.html" class="admin-only hidden">Grupos</a>
       <a href="/partners.html" class="admin-only hidden">Parceiros</a>
       <a href="/users.html" class="admin-only hidden">Usuários</a>
@@ -75,10 +76,15 @@
         <input type="hidden" id="link-id" />
         <input type="hidden" id="link-type" value="campaign" />
 
-        <div class="link-type-toggle" style="display:flex;gap:8px;margin-bottom:18px;">
+        <div class="link-type-toggle" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">
           <button type="button" class="btn-primary link-type-btn" id="link-type-campaign-btn" data-type="campaign">Link de Campanha</button>
           <button type="button" class="btn-secondary link-type-btn" id="link-type-partner-btn" data-type="partner">Link de Parceiro</button>
+          <button type="button" class="btn-secondary link-type-btn" id="link-type-redirect-btn" data-type="redirect">Link de Redirecionamento</button>
         </div>
+
+        <p class="hint hidden" id="redirect-hint" style="margin:-8px 0 14px;">
+          Ao acessar, a pessoa vê "Você está sendo redirecionada para: &lt;título&gt;" e uma contagem de 5 segundos antes de ir ao destino.
+        </p>
 
         <label>Grupo</label>
         <div class="chip-group" id="link-group-chips"></div>

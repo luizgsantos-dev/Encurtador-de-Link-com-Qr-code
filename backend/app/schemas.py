@@ -32,6 +32,7 @@ class LinkCreate(BaseModel):
     utm_source: str | None = None
     utm_medium: str | None = None
     utm_term: str | None = None
+    is_redirect_page: bool = False
 
     @field_validator("destination_url")
     @classmethod
@@ -82,9 +83,13 @@ class LinkCreate(BaseModel):
 
     @model_validator(mode="after")
     def validate_utm_requires_partner(self) -> "LinkCreate":
+        if self.is_redirect_page and self.partner_id:
+            raise ValueError("Link de redirecionamento não pode ser vinculado a um parceiro")
         has_utm = any([self.utm_campaign, self.utm_source, self.utm_medium, self.utm_term])
         if has_utm and not self.partner_id:
             raise ValueError("utm_campaign, utm_source, utm_medium e utm_term só podem ser definidos em links vinculados a um parceiro")
+        if self.partner_id and not all([self.utm_campaign, self.utm_source, self.utm_medium, self.utm_term]):
+            raise ValueError("utm_campaign, utm_source, utm_medium e utm_term são obrigatórios em links vinculados a um parceiro")
         return self
 
 
@@ -99,6 +104,7 @@ class LinkUpdate(BaseModel):
     utm_source: str | None = None
     utm_medium: str | None = None
     utm_term: str | None = None
+    is_redirect_page: bool | None = None
 
     @field_validator("destination_url")
     @classmethod
@@ -159,6 +165,7 @@ class LinkOut(BaseModel):
     utm_source: str | None
     utm_medium: str | None
     utm_term: str | None
+    is_redirect_page: bool = False
 
     class Config:
         from_attributes = True
@@ -391,3 +398,24 @@ class DashboardOverview(BaseModel):
     daily_clicks_partner: list[DailyClicks]
     daily_clicks_general: list[DailyClicks]
     top_links: list[TopLinkStat]
+
+
+class FunnelRow(BaseModel):
+    link_id: uuid.UUID
+    short_code: str
+    title: str | None
+    short_url: str
+    name: str | None
+    utm_source: str | None
+    clicks: int
+    accesses: int
+    leads: int
+    appointments: int
+    visits: int
+    sales: int
+
+
+class FunnelOut(BaseModel):
+    rows: list[FunnelRow]
+    crm_available: bool
+    crm_error: str | None = None

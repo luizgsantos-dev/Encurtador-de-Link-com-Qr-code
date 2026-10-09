@@ -1,15 +1,23 @@
+import logging
 from contextlib import asynccontextmanager
+from datetime import datetime
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import FastAPI
 from sqlalchemy import func, select, text
 
+from app.postgres_sync import sync_click_totals_to_external_db
 from app.config import get_settings
 from app.database import Base, async_session_maker, engine
 from app.models import User
-from app.routers import auth, groups, links, partners, redirect, stats, users
+from app.routers import auth, funnel, groups, links, partners, redirect, stats, users
 from app.security import hash_password
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+
 settings = get_settings()
+scheduler = AsyncIOScheduler()
 
 
 @asynccontextmanager
@@ -45,6 +53,10 @@ async def lifespan(app: FastAPI):
         await conn.execute(text("ALTER TABLE links ADD COLUMN IF NOT EXISTS utm_source VARCHAR(32)"))
         await conn.execute(text("ALTER TABLE links ADD COLUMN IF NOT EXISTS utm_medium VARCHAR(255)"))
         await conn.execute(text("ALTER TABLE links ADD COLUMN IF NOT EXISTS utm_term VARCHAR(32)"))
+        # migração leve para bancos criados antes do link de redirecionamento
+        await conn.execute(
+            text("ALTER TABLE links ADD COLUMN IF NOT EXISTS is_redirect_page BOOLEAN NOT NULL DEFAULT false")
+        )
 
     async with async_session_maker() as db:
         user_count = await db.scalar(select(func.count(User.id)))
@@ -59,7 +71,18 @@ async def lifespan(app: FastAPI):
             )
             await db.commit()
 
+    scheduler.add_job(
+        sync_click_totals_to_external_db,
+        trigger=IntervalTrigger(hours=24),
+        next_run_time=datetime.now(),
+        id="external_db_click_sync",
+        replace_existing=True,
+    )
+    scheduler.start()
+
     yield
+
+    scheduler.shutdown()
 
 
 app = FastAPI(title="Encurtador de Links", lifespan=lifespan)
@@ -71,6 +94,7 @@ app.include_router(partners.router)
 app.include_router(links.router)
 app.include_router(stats.router)
 app.include_router(stats.overview_router)
+app.include_router(funnel.router)
 app.include_router(redirect.router)
 
 

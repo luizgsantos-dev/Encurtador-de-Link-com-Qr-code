@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Funil - Encurtador de Links</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1>Encurtador de Links</h1>
+    <nav class="topnav" id="topnav">
+      <a href="/dashboard.html">Links</a>
+      <a href="/funnel.html">Funil</a>
+      <a href="/groups.html" class="admin-only hidden">Grupos</a>
+      <a href="/partners.html" class="admin-only hidden">Parceiros</a>
+      <a href="/users.html" class="admin-only hidden">Usuários</a>
+    </nav>
+    <button class="btn-secondary" id="logout-btn">Sair</button>
+  </div>
+
+  <div class="container">
+    <div class="section-header">
+      <h2>Funil: do clique à venda</h2>
+    </div>
+
+    <div class="card funnel-filters">
+      <div>
+        <label for="funnel-link">Link / influenciadora</label>
+        <select id="funnel-link"><option value="">Todos</option></select>
+      </div>
+      <div>
+        <label for="funnel-start">De</label>
+        <input type="date" id="funnel-start" />
+      </div>
+      <div>
+        <label for="funnel-end">Até</label>
+        <input type="date" id="funnel-end" />
+      </div>
+      <button class="btn-secondary" id="funnel-clear">Todo o período</button>
+    </div>
+
+    <div class="error-msg" id="funnel-error"></div>
+
+    <div class="card funnel-card">
+      <div class="funnel" id="funnel"></div>
+      <p class="funnel-note">
+        Etapas de lead em diante vêm da etapa <strong>atual</strong> do lead no CRM (Facilita):
+        quem chegou a visitar e depois virou "Venda Perdida" conta só como lead.
+        Valor de venda (VGV) ainda não é preenchido pelo CRM.
+      </p>
+    </div>
+
+    <div class="section-header">
+      <h2>Por link</h2>
+    </div>
+    <div class="card">
+      <table id="funnel-table">
+        <thead>
+          <tr>
+            <th>Link / influenciadora</th>
+            <th>Cliques</th>
+            <th>Acessos</th>
+            <th>Tx Acessos</th>
+            <th>Leads</th>
+            <th>Tx Leads</th>
+            <th>Agend.</th>
+            <th>Tx Agend.</th>
+            <th>Visitas</th>
+            <th>Tx Visitas</th>
+            <th>Vendas</th>
+            <th>Tx Vendas</th>
+          </tr>
+        </thead>
+        <tbody id="funnel-tbody"></tbody>
+        <tfoot id="funnel-tfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/nav.js"></script>
+  <script src="/assets/js/funnel.js"></script>
+</body>
+</html>

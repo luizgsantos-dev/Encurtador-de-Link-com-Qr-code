@@ -4,12 +4,14 @@
 # Não é carregado automaticamente pelo `docker compose up` local — só entra em
 # vigor quando referenciado explicitamente, então não interfere no dev.
 #
+# Tudo fixado no nó "debian" (único nó do swarm hoje). Se novos nós forem
+# adicionados depois, os 3 "node.hostname == debian" abaixo continuam
+# garantindo que db/api/web fiquem sempre nessa mesma máquina.
+#
 # Antes de usar:
-# 1. Troque __NODE_HOSTNAME__ pelo hostname real (ver `docker node ls`) da
-#    máquina onde tudo (db, api, web) deve ficar fixado.
-# 2. Confirme que a rede "network_public" já existe no swarm (é a mesma usada
+# 1. Confirme que a rede "network_public" já existe no swarm (é a mesma usada
 #    pelo Traefik, ver traefik.yml: --providers.swarm.network=network_public).
-# 3. Gere as imagens ANTES do deploy, na própria máquina de destino (o Swarm
+# 2. Gere as imagens ANTES do deploy, na própria máquina de destino (o Swarm
 #    não faz build a partir de "build:" em `docker stack deploy`):
 #      docker compose build
 #    (isso cria localmente encurtador-api:latest e encurtador-web:latest,
@@ -20,13 +22,16 @@ services:
     deploy:
       placement:
         constraints:
-          - node.hostname == __NODE_HOSTNAME__
+          - node.hostname == debian
 
   api:
+    networks:
+      - default
+      - network_public
     deploy:
       placement:
         constraints:
-          - node.hostname == __NODE_HOSTNAME__
+          - node.hostname == debian
 
   web:
     networks:
@@ -35,7 +40,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.hostname == __NODE_HOSTNAME__
+          - node.hostname == debian
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.encurtador.rule=Host(`links.grupovivart.com.br`)"

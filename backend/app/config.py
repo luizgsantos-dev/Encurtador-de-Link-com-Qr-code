@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     base_url: str = "http://localhost:8080"
     cookie_secure: bool = False
 
+    # sincronização diária do total de cliques por link para um Postgres externo
+    external_db_url: str | None = None
+    external_db_table: str = "link_click_totals"
+
 
 @lru_cache
 def get_settings() -> Settings:

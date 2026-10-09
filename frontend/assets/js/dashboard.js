@@ -52,7 +52,9 @@ function renderLinks(links) {
       return `
         <tr data-id="${link.id}">
           <td>
-            <div>${escapeHtml(link.title) || "<em>Sem título</em>"}</div>
+            <div>${escapeHtml(link.title) || "<em>Sem título</em>"}${
+              link.is_redirect_page ? ' <span class="badge badge-inactive">Redirecionamento</span>' : ""
+            }</div>
             <a class="short-link" href="${link.short_url}" target="_blank" rel="noopener">${link.short_url}</a>
           </td>
           <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(link.destination_url)}">
@@ -105,14 +107,19 @@ async function loadPartners() {
 function setLinkType(type) {
   document.getElementById("link-type").value = type;
 
-  const campaignBtn = document.getElementById("link-type-campaign-btn");
-  const partnerBtn = document.getElementById("link-type-partner-btn");
-  campaignBtn.classList.toggle("btn-primary", type === "campaign");
-  campaignBtn.classList.toggle("btn-secondary", type !== "campaign");
-  partnerBtn.classList.toggle("btn-primary", type === "partner");
-  partnerBtn.classList.toggle("btn-secondary", type !== "partner");
+  [
+    ["link-type-campaign-btn", "campaign"],
+    ["link-type-partner-btn", "partner"],
+    ["link-type-redirect-btn", "redirect"],
+  ].forEach(([btnId, btnType]) => {
+    const btn = document.getElementById(btnId);
+    btn.classList.toggle("btn-primary", type === btnType);
+    btn.classList.toggle("btn-secondary", type !== btnType);
+  });
 
-  document.getElementById("generic-utm-box").classList.toggle("hidden", type !== "campaign");
+  // link de redirecionamento usa o mesmo UTM builder do link de campanha
+  document.getElementById("generic-utm-box").classList.toggle("hidden", type === "partner");
+  document.getElementById("redirect-hint").classList.toggle("hidden", type !== "redirect");
   document.getElementById("partner-utm-box").classList.toggle("hidden", type !== "partner");
   document.getElementById("link-partner-section").classList.toggle("hidden", type !== "partner");
 }
@@ -150,7 +157,7 @@ function openLinkModal(link = null) {
     setChipGroupValue("partner-utm-term-chips", link.utm_term || "");
     customCodeWrapper.classList.add("hidden");
     activeWrapper.classList.remove("hidden");
-    setLinkType(link.partner_id ? "partner" : "campaign");
+    setLinkType(link.partner_id ? "partner" : link.is_redirect_page ? "redirect" : "campaign");
   } else {
     title.textContent = "Novo link";
     document.getElementById("link-id").value = "";
@@ -198,6 +205,13 @@ async function handleLinkFormSubmit(event) {
       }
     : {};
 
+  if (linkType === "partner" && partnerId) {
+    if (!partnerUtm.utm_campaign || !partnerUtm.utm_source || !partnerUtm.utm_medium || !partnerUtm.utm_term) {
+      errorMsg.textContent = "Preencha nome da campanha, tipo, nome (influencer/marca) e canal";
+      return;
+    }
+  }
+
   try {
     if (id) {
       const isActive = document.getElementById("is-active").checked;
@@ -208,6 +222,7 @@ async function handleLinkFormSubmit(event) {
         group_id: groupId,
         partner_id: partnerId || null,
         clear_partner: !partnerId,
+        is_redirect_page: linkType === "redirect",
         ...partnerUtm,
       });
     } else {
@@ -218,6 +233,7 @@ async function handleLinkFormSubmit(event) {
         custom_code: customCode,
         group_id: groupId,
         partner_id: partnerId || null,
+        is_redirect_page: linkType === "redirect",
         ...partnerUtm,
       });
     }
@@ -270,6 +286,7 @@ function initModals() {
   document.getElementById("close-qr-btn").addEventListener("click", closeQrModal);
   document.getElementById("link-type-campaign-btn").addEventListener("click", () => setLinkType("campaign"));
   document.getElementById("link-type-partner-btn").addEventListener("click", () => setLinkType("partner"));
+  document.getElementById("link-type-redirect-btn").addEventListener("click", () => setLinkType("redirect"));
 }
 
 const LINE_COLORS = ["#2a78d6", "#eb6834", "#1baf7a"];
