@@ -7,3 +7,4 @@ venv/
 .env.production
 .docker-compose.prod.yml
 .docker-compose.override.yml
+Links.vivart/
